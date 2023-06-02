@@ -109,6 +109,11 @@ class Exploit:
                     if "Invalid credentials" in certipy_results:
                         print(f'[-] Invalid credentials')
                         return False
+
+                    # Save certipy output to a JSON file
+                    output_filename = f"{self.__certipy_output_prefix}_Certipy.json"
+                    with open(output_filename, "w") as file:
+                        json.dump(certipy_results, file)
                     
                     print(f'[+] Saved certipy output to {self.__certipy_output_prefix}_Certipy.json\n')
                     return True
@@ -246,13 +251,17 @@ class Exploit:
 
         templates = certipy_json['Certificate Templates']
         
-        for template in templates.values():
-            if "[!] Vulnerabilities" in template:
-                vulnerabilities = template["[!] Vulnerabilities"]
-                for i in range(1, 8):
-                    if f'ESC{i}' in vulnerabilities:
-                        if f'ESC{i}' not in self.__vulnerable_certificate_templates:
-                            self.__vulnerable_certificate_templates[f'ESC{i}'] = []
+        if isinstance(templates, str):
+            print("[!] Could not find any certificate templates")
+            return {}
+        else:
+            for template in templates.values():
+                if "[!] Vulnerabilities" in template:
+                    vulnerabilities = template["[!] Vulnerabilities"]
+                    for i in range(1, 8):
+                        if f'ESC{i}' in vulnerabilities:
+                            if f'ESC{i}' not in self.__vulnerable_certificate_templates:
+                                self.__vulnerable_certificate_templates[f'ESC{i}'] = []
                     
                         self.__vulnerable_certificate_templates[f'ESC{i}'].append(template["Template Name"])
 
